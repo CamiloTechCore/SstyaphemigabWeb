@@ -2,6 +2,7 @@ import { Link } from 'react-router-dom'
 import { FaShieldAlt, FaHeartbeat, FaChalkboardTeacher, FaCheckCircle } from 'react-icons/fa'
 import GlassCard from '../components/GlassCard'
 import HomeMediaCarousel from '../components/HomeMediaCarousel'
+import HeroPhone from '../components/HeroPhone'
 
 const HIGHLIGHTS = [
   {
@@ -31,7 +32,7 @@ function Home() {
   return (
     <div className="mx-auto max-w-5xl">
       {/* HERO */}
-      <section className="relative mb-14 overflow-hidden rounded-3xl">
+      <section className="home-hero relative mb-14 overflow-hidden rounded-3xl">
         <div className="absolute inset-0 bg-gradient-to-br from-navy/90 via-navy/75 to-green/60" />
 
         <div className="home-hero-content relative z-10 flex flex-col items-start gap-8 px-6 py-10 sm:px-10 sm:py-14">
@@ -58,6 +59,7 @@ function Home() {
             </Link>
             </div>
           </div>
+          <HeroPhone />
         </div>
       </section>
 

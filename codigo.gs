@@ -14,6 +14,7 @@ const CONFIG = {
   FOLDER_ID: '1bLdiJADptUge-q3ItoANA-HUaN2Xk6tz',     // 👈 ID de la carpeta en Google Drive para imágenes/videos del blog
   SHEET_CONTACTS: 'BD',
   SHEET_BLOG: 'Blog',
+  SHEET_REACTIONS: 'Reacciones',
   SHEET_USERS: 'Usuarios',
   NOTIFICATION_EMAIL: 'brayancamilomolinadev@gmail.com', // 👈 Tu correo personal para notificaciones
   SENDER_NAME: 'SST Y APH EMIGAB'
@@ -51,6 +52,9 @@ function configurarEntorno() {
     sheetUsers.getRange(2, 1, 1, 2).setValues([['admin', 'admin123']]); 
   }
   
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
+  try { ensureBlogSchema(ss); SpreadsheetApp.flush(); } finally { lock.releaseLock(); }
   Logger.log("¡Entorno configurado correctamente! Hojas creadas.");
 }
 
@@ -74,9 +78,9 @@ function getPrimeraFilaVacia(sheet) {
  */
 function doPost(e) {
   const lock = LockService.getScriptLock();
-  lock.tryLock(10000);
 
   try {
+    if (!lock.tryLock(10000)) throw new Error('Servidor ocupado. Intenta nuevamente.');
     let payload = {};
     if (e && e.postData && e.postData.contents) {
       try {
@@ -96,6 +100,8 @@ function doPost(e) {
       return handleLogin(payload);
     } else if (action === 'create_post') {
       return handleCreatePost(payload);
+    } else if (action === 'react_post') {
+      return handleReaction(payload);
     } else {
       throw new Error("Acción no válida");
     }
@@ -105,7 +111,7 @@ function doPost(e) {
       .createTextOutput(JSON.stringify({ success: false, error: error.toString() }))
       .setMimeType(ContentService.MimeType.JSON);
   } finally {
-    lock.releaseLock();
+    if (lock.hasLock()) { SpreadsheetApp.flush(); lock.releaseLock(); }
   }
 }
 
@@ -115,31 +121,84 @@ function doPost(e) {
  * ==============================================================================
  */
 function doGet(e) {
-  const action = e.parameter.action || 'status';
-  
-  if (action === 'get_posts') {
+  const params = (e && e.parameter) || {};
+  const lock = LockService.getScriptLock();
+  try {
+    if (params.action !== 'get_posts') return jsonResponse({ status: 'online' });
+    if (!lock.tryLock(10000)) throw new Error('Servidor ocupado. Intenta nuevamente.');
     const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
-    const sheetBlog = ss.getSheetByName(CONFIG.SHEET_BLOG);
-    const data = sheetBlog.getDataRange().getValues();
-    
-    // Remover encabezados
-    const headers = data.shift();
-    const posts = data.map(row => ({
+    const schema = ensureBlogSchema(ss);
+    const votes = schema.reactions.getDataRange().getValues().slice(1);
+    const posts = schema.blog.getDataRange().getValues().slice(1).filter(row => row[0] || row[1] || row[2]).map(row => ({
+      id: row[schema.idColumn - 1],
       fecha: row[0],
       titulo: row[1],
       contenido: row[2],
       urlArchivo: row[3],
-      tipoArchivo: row[4]
-    })).reverse(); // Para mostrar los más recientes primero
-
-    return ContentService
-      .createTextOutput(JSON.stringify({ success: true, data: posts }))
-      .setMimeType(ContentService.MimeType.JSON);
+      tipoArchivo: row[4],
+      ...reactionSummary(votes, row[schema.idColumn - 1], params.voterId)
+    })).reverse();
+    return jsonResponse({ success: true, data: posts });
+  } catch (error) {
+    return jsonResponse({ success: false, error: error.message });
+  } finally {
+    if (lock.hasLock()) { SpreadsheetApp.flush(); lock.releaseLock(); }
   }
+}
 
-  return ContentService
-    .createTextOutput(JSON.stringify({ status: 'online', message: 'API de SST Y APH EMIGAB activa' }))
-    .setMimeType(ContentService.MimeType.JSON);
+function jsonResponse(value) {
+  return ContentService.createTextOutput(JSON.stringify(value)).setMimeType(ContentService.MimeType.JSON);
+}
+
+// Call only while holding the script lock. Existing content and columns are preserved.
+function ensureBlogSchema(ss) {
+  let blog = ss.getSheetByName(CONFIG.SHEET_BLOG);
+  if (!blog) blog = ss.insertSheet(CONFIG.SHEET_BLOG);
+  if (!blog.getLastRow()) blog.appendRow(['Fecha', 'Título', 'Contenido', 'URL Archivo', 'Tipo Archivo', 'ID']);
+  const headers = blog.getRange(1, 1, 1, Math.max(5, blog.getLastColumn())).getValues()[0];
+  let idColumn = headers.indexOf('ID') + 1;
+  if (!idColumn) { idColumn = headers.length + 1; blog.getRange(1, idColumn).setValue('ID'); }
+  const rows = blog.getDataRange().getValues();
+  const seen = new Set();
+  for (let i = 1; i < rows.length; i++) {
+    if (!rows[i][0] && !rows[i][1] && !rows[i][2]) continue;
+    let id = rows[i][idColumn - 1];
+    if (!id || seen.has(String(id))) {
+      id = Utilities.getUuid();
+      blog.getRange(i + 1, idColumn).setValue(id);
+    }
+    seen.add(String(id));
+  }
+  let reactions = ss.getSheetByName(CONFIG.SHEET_REACTIONS);
+  if (!reactions) reactions = ss.insertSheet(CONFIG.SHEET_REACTIONS);
+  if (!reactions.getLastRow()) reactions.appendRow(['Post ID', 'Voter ID', 'Reacción', 'Actualizado']);
+  return { blog, reactions, idColumn };
+}
+
+function reactionSummary(rows, postId, voterId) {
+  const result = { reactions: { like: 0, dislike: 0, love: 0 }, myReaction: null };
+  const voters = new Map();
+  rows.forEach(row => { if (String(row[0]) === String(postId)) voters.set(String(row[1]), row[2]); });
+  voters.forEach((reaction, voter) => {
+    if (Object.prototype.hasOwnProperty.call(result.reactions, reaction)) result.reactions[reaction]++;
+    if (voter === voterId) result.myReaction = reaction;
+  });
+  return result;
+}
+
+function handleReaction(payload) {
+  const { postId, voterId, reaction } = payload;
+  if (typeof postId !== 'string' || !postId || postId.length > 128 ||
+      typeof voterId !== 'string' || !/^[a-f0-9-]{36}$/i.test(voterId) ||
+      !['like', 'dislike', 'love'].includes(reaction)) throw new Error('Reacción inválida.');
+  const schema = ensureBlogSchema(SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID));
+  if (!schema.blog.getDataRange().getValues().slice(1).some(row => String(row[schema.idColumn - 1]) === postId)) throw new Error('Publicación no encontrada.');
+  const rows = schema.reactions.getDataRange().getValues().slice(1);
+  const index = rows.findIndex(row => String(row[0]) === postId && row[1] === voterId);
+  const value = [postId, voterId, reaction, new Date().toISOString()];
+  if (index < 0) { schema.reactions.appendRow(value); rows.push(value); }
+  else { schema.reactions.getRange(index + 2, 1, 1, 4).setValues([value]); rows[index] = value; }
+  return jsonResponse({ success: true, data: reactionSummary(rows, postId, voterId) });
 }
 
 /**
@@ -198,7 +257,8 @@ function handleLogin(payload) {
 // --- 3. Creación de Posts de Blog de texto enriquecido ---
 function handleCreatePost(payload) {
   const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
-  const sheetBlog = ss.getSheetByName(CONFIG.SHEET_BLOG);
+  const schema = ensureBlogSchema(ss);
+  const sheetBlog = schema.blog;
   
   const title = payload.title || 'Sin Título';
   const content = payload.content || '';
@@ -207,14 +267,17 @@ function handleCreatePost(payload) {
   const fileUrl = '';
   const fileMime = 'none';
 
-  const nextRow = getPrimeraFilaVacia(sheetBlog);
+  const nextRow = sheetBlog.getLastRow() + 1;
   sheetBlog.getRange(nextRow, 1, 1, 5).setValues([[date, title, content, fileUrl, fileMime]]);
+  const postId = Utilities.getUuid();
+  sheetBlog.getRange(nextRow, schema.idColumn).setValue(postId);
   SpreadsheetApp.flush();
 
   return ContentService
     .createTextOutput(JSON.stringify({
       success: true,
       message: 'Post publicado correctamente',
+      id: postId,
       url: fileUrl
     }))
     .setMimeType(ContentService.MimeType.JSON);

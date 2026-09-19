@@ -11,10 +11,11 @@ function shuffle(items) {
   return shuffled
 }
 
-function MediaCard({ item, index, onSelect }) {
+function MediaCard({ item, index, onSelect, duplicate = false }) {
   return (
     <button
       type="button"
+      tabIndex={duplicate ? -1 : undefined}
       onClick={() => onSelect(item)}
       className="group relative w-36 shrink-0 overflow-hidden rounded-xl border border-white/20 text-left shadow-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-green sm:w-44 md:w-52"
       aria-label={`Abrir ${item.title || `contenido multimedia ${index + 1}`}`}
@@ -45,19 +46,23 @@ function MediaCard({ item, index, onSelect }) {
 }
 
 function MarqueeRow({ items, direction, onSelect }) {
-  const repeatedItems = [...items, ...items]
+  // Each identical group exceeds the largest gallery viewport (max-w-5xl).
+  const repeatedItems = Array.from({ length: Math.ceil(8 / items.length) }, () => items).flat()
 
   return (
     <div className="media-marquee-row">
       <div className={`media-marquee-track media-marquee-track-${direction}`}>
+        {[0, 1].map((copy) => <div className="media-marquee-group" key={copy} aria-hidden={copy === 1 ? true : undefined}>
         {repeatedItems.map((item, index) => (
           <MediaCard
             key={`${item.url}-${index}`}
             item={item}
+            duplicate={copy === 1}
             index={index % items.length}
             onSelect={onSelect}
           />
         ))}
+        </div>)}
       </div>
     </div>
   )

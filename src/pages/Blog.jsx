@@ -7,6 +7,7 @@ import Loader from '../components/Loader'
 import AdminAuthModal from '../components/AdminAuthModal'
 import CreatePostModal from '../components/CreatePostModal'
 import ProtectedRoute from '../components/ProtectedRoute'
+import PostReactions from '../components/PostReactions'
 import { getPosts } from '../services/api'
 import { isAuthenticated } from '../services/auth'
 
@@ -17,6 +18,10 @@ function Blog() {
   const [showAuth, setShowAuth] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
   const [selectedPost, setSelectedPost] = useState(null)
+  const updateReactions = (id, data) => {
+    setPosts(current => current.map(post => post.id === id ? { ...post, ...data } : post))
+    setSelectedPost(current => current?.id === id ? { ...current, ...data } : current)
+  }
 
   const hasContentLink = (post) => {
     const document = new DOMParser().parseFromString(post.contenido || '', 'text/html')
@@ -77,7 +82,7 @@ function Blog() {
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((post, i) => (
             <GlassCard
-              key={`${post.fecha}-${i}`}
+              key={post.id || `${post.fecha}-${i}`}
               as={motion.button}
               onClick={() => setSelectedPost(post)}
               className="relative w-full text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-green"
@@ -103,6 +108,7 @@ function Blog() {
                 className="post-content line-clamp-4 text-sm text-navy/70"
                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.contenido || '') }}
               />
+              {post.reactions && <p className="mt-4 text-xs text-navy/60">Me gusta: {post.reactions.like || 0} · No me gusta: {post.reactions.dislike || 0} · Me encanta: {post.reactions.love || 0}</p>}
             </GlassCard>
           ))}
         </div>
@@ -184,6 +190,7 @@ function Blog() {
                   className="post-content text-sm text-navy/70 sm:text-base"
                   dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedPost.contenido || '') }}
                 />
+                <PostReactions key={selectedPost.id} post={selectedPost} onUpdate={updateReactions} />
               </div>
             </motion.article>
           </motion.div>
