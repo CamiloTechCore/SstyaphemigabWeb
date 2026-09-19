@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import DOMPurify from 'dompurify'
 import { HiBell, HiPlus, HiX } from 'react-icons/hi'
@@ -8,7 +8,7 @@ import AdminAuthModal from '../components/AdminAuthModal'
 import CreatePostModal from '../components/CreatePostModal'
 import ProtectedRoute from '../components/ProtectedRoute'
 import PostReactions from '../components/PostReactions'
-import { getPosts } from '../services/api'
+import { getPosts, reactToPost } from '../services/api'
 import { isAuthenticated } from '../services/auth'
 
 function Blog() {
@@ -18,9 +18,23 @@ function Blog() {
   const [showAuth, setShowAuth] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
   const [selectedPost, setSelectedPost] = useState(null)
+  const pendingIds = useRef(new Set())
+  const [pendingReactions, setPendingReactions] = useState({})
   const updateReactions = (id, data) => {
     setPosts(current => current.map(post => post.id === id ? { ...post, ...data } : post))
     setSelectedPost(current => current?.id === id ? { ...current, ...data } : current)
+  }
+  const handleReaction = async (id, reaction) => {
+    if (pendingIds.current.has(id)) return
+    pendingIds.current.add(id)
+    setPendingReactions(current => ({ ...current, [id]: true }))
+    try {
+      const response = await reactToPost(id, reaction)
+      updateReactions(id, response.data)
+    } finally {
+      pendingIds.current.delete(id)
+      setPendingReactions(current => ({ ...current, [id]: false }))
+    }
   }
 
   const hasContentLink = (post) => {
@@ -81,11 +95,11 @@ function Blog() {
       {!loading && !loadError && posts.length > 0 && (
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {posts.map((post, i) => (
+            <article key={post.id || `${post.fecha}-${i}`} className="flex min-w-0 flex-col gap-3">
             <GlassCard
-              key={post.id || `${post.fecha}-${i}`}
               as={motion.button}
               onClick={() => setSelectedPost(post)}
-              className="relative w-full text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-green"
+              className="relative w-full flex-1 text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-green"
               aria-label={`Leer publicación: ${post.titulo}`}
             >
               {hasContentLink(post) && (
@@ -108,8 +122,9 @@ function Blog() {
                 className="post-content line-clamp-4 text-sm text-navy/70"
                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(post.contenido || '') }}
               />
-              {post.reactions && <p className="mt-4 text-xs text-navy/60">Me gusta: {post.reactions.like || 0} · No me gusta: {post.reactions.dislike || 0} · Me encanta: {post.reactions.love || 0}</p>}
             </GlassCard>
+            <PostReactions post={post} onReact={handleReaction} pending={Boolean(pendingReactions[post.id])} compact />
+            </article>
           ))}
         </div>
       )}
@@ -190,7 +205,7 @@ function Blog() {
                   className="post-content text-sm text-navy/70 sm:text-base"
                   dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedPost.contenido || '') }}
                 />
-                <PostReactions key={selectedPost.id} post={selectedPost} onUpdate={updateReactions} />
+                <PostReactions key={selectedPost.id} post={selectedPost} onReact={handleReaction} pending={Boolean(pendingReactions[selectedPost.id])} />
               </div>
             </motion.article>
           </motion.div>

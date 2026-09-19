@@ -1,7 +1,7 @@
 import { FaWhatsapp } from 'react-icons/fa'
 import { motion } from 'framer-motion'
 
-const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '573000000000'
+const WHATSAPP_NUMBER = import.meta.env.VITE_WHATSAPP_NUMBER || '573213351917'
 const DEFAULT_MESSAGE = 'Hola, quiero más información sobre los servicios de SST Y APH EMIGAB.'
 
 /**

@@ -8,7 +8,7 @@ function Contacto() {
       <header className="page-heading">
         <h1 className="mb-3 text-3xl font-extrabold text-navy">Contacto</h1>
         <p className="max-w-2xl text-sm text-navy/70 sm:text-base">
-          Escríbenos y un asesor de SST Y APH EMIGAB se pondrá en contacto contigo a la brevedad.
+          Escríbenos y nos pondremos en contacto contigo a la brevedad.
         </p>
       </header>
 
@@ -23,10 +23,10 @@ function Contacto() {
             <h2 className="mb-4 text-lg font-bold text-navy">Información de contacto</h2>
             <ul className="space-y-3 text-sm text-navy/70">
               <li className="flex items-center gap-3">
-                <FaMapMarkerAlt className="text-green" /> Colombia
+                <FaMapMarkerAlt className="text-green" /> Colombia | Bogotá
               </li>
               <li className="flex items-center gap-3">
-                <FaPhoneAlt className="text-green" /> +57 300 000 0000
+                <FaPhoneAlt className="text-green" /> +57 321 3351917
               </li>
               <li className="flex items-center gap-3">
                 <FaClock className="text-green" /> Lun - Vie: 8:00 AM - 6:00 PM

@@ -10,20 +10,19 @@ function vimeoEmbed(value) {
     const embed = new URL(`https://player.vimeo.com/video/${id}`)
     const hash = url.searchParams.get('h') || (parts[0] !== 'video' ? parts[1] : '')
     if (hash) embed.searchParams.set('h', hash)
-    for (const [key, value] of Object.entries({ autoplay: '1', muted: '1', loop: '1', playsinline: '1', dnt: '1' })) embed.searchParams.set(key, value)
+    for (const [key, value] of Object.entries({ autoplay: '1', muted: '1', loop: '1', playsinline: '1', dnt: '1', badge: '0', autopause: '0' })) embed.searchParams.set(key, value)
     return embed.href
   } catch { return null }
 }
 
 export default function HeroPhone() {
-  // Temporary sample from Vimeo's official Player SDK documentation.
-  const sampleUrl = 'https://player.vimeo.com/video/76979871?h=8272103f6e'
+  const defaultUrl = 'https://player.vimeo.com/video/1228365227'
   const configuredUrl = import.meta.env.VITE_HERO_VIMEO_URL
-  const src = vimeoEmbed(configuredUrl ?? sampleUrl)
+  const src = vimeoEmbed(configuredUrl ?? defaultUrl)
   return (
     <div className="hero-phone" aria-label="SST y APH EMIGAB en acción">
       <div className="hero-phone-screen">
-        {src ? <iframe src={src} title={configuredUrl && configuredUrl !== sampleUrl ? 'Video de SST y APH EMIGAB' : 'Video de demostración de Vimeo'} allow="autoplay; fullscreen; picture-in-picture" allowFullScreen /> : (
+        {src ? <iframe src={src} title="APH_Video1 — SST y APH EMIGAB" allow="autoplay; fullscreen; picture-in-picture; encrypted-media" referrerPolicy="strict-origin-when-cross-origin" allowFullScreen /> : (
           <div className="flex h-full flex-col items-center justify-center gap-5 px-5 text-center text-white">
             <FaShieldAlt size={48} className="text-green" />
             <p className="text-lg font-extrabold">SST Y APH<br />EMIGAB</p>

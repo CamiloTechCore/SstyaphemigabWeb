@@ -1,0 +1,28 @@
+.post-reactions { color: #06315a; }
+.post-reactions-compact { padding: 0 4px; }
+.post-reactions-modal { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid rgb(6 49 90 / 10%); }
+.reaction-heading { margin-bottom: .75rem; font-size: .8rem; font-weight: 600; }
+.reaction-options { display: flex; flex-wrap: wrap; gap: .5rem; }
+.reaction-button {
+  --reaction-accent: #236ca6;
+  display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
+  min-height: 44px; padding: .55rem .85rem; border-radius: 999px;
+  border: 1px solid rgb(6 49 90 / 9%); background: rgb(255 255 255 / 75%);
+  box-shadow: 0 3px 12px rgb(6 49 90 / 5%); color: inherit; cursor: pointer;
+  transition: transform .18s ease, box-shadow .18s ease, background .18s ease;
+}
+.post-reactions-compact .reaction-button { flex: 1; min-width: 0; padding-inline: .5rem; }
+.reaction-dislike { --reaction-accent: #a56026; }
+.reaction-love { --reaction-accent: #ce386c; }
+.reaction-icon { width: 16px; height: 16px; color: var(--reaction-accent); flex-shrink: 0; }
+.reaction-label { font-size: .75rem; font-weight: 600; }
+.reaction-count { font-size: .75rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+.reaction-button:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 6px 16px rgb(6 49 90 / 12%); }
+.reaction-button[aria-pressed='true'] { border-color: var(--reaction-accent); background: color-mix(in srgb, var(--reaction-accent) 12%, white); }
+.reaction-button:focus-visible { outline: 2px solid var(--reaction-accent); outline-offset: 3px; }
+.reaction-button:disabled { opacity: .6; cursor: wait; }
+[data-theme='dark'] .post-reactions { color: #e7f0f7; }
+[data-theme='dark'] .reaction-button { background: #163a57; border-color: rgb(255 255 255 / 15%); }
+[data-theme='dark'] .reaction-button[aria-pressed='true'] { background: color-mix(in srgb, var(--reaction-accent) 28%, #163a57); border-color: var(--reaction-accent); }
+[data-theme='dark'] .reaction-icon { filter: brightness(1.5); }
+@media (prefers-reduced-motion: reduce) { .reaction-button { transition: none; } .reaction-button:hover:not(:disabled) { transform: none; } }
