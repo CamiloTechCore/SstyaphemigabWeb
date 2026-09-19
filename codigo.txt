@@ -1,0 +1,290 @@
+/**
+ * ==============================================================================
+ * API BACKEND - SST Y APH EMIGAB (Google Apps Script)
+ * ==============================================================================
+ * Esta API maneja:
+ * 1. Recepción de leads de contacto.
+ * 2. Autenticación de Administrador.
+ * 3. Creación de posts para el Blog (incluyendo subida de archivos a Drive).
+ * 4. Lectura de posts del Blog.
+ */
+
+const CONFIG = {
+  SPREADSHEET_ID: '', // 👈 ID de la hoja de cálculo en Google Sheets
+  FOLDER_ID: '1bLdiJADptUge-q3ItoANA-HUaN2Xk6tz', // Carpeta en Google Drive para imágenes/videos del blog
+  SHEET_CONTACTS: 'BD',
+  SHEET_BLOG: 'Blog',
+  SHEET_USERS: 'Usuarios',
+  NOTIFICATION_EMAIL: '', // 👈 Tu correo personal para notificaciones
+  SENDER_NAME: 'SST Y APH EMIGAB'
+};
+
+/**
+ * ==============================================================================
+ * FUNCIÓN DE INICIALIZACIÓN (¡Ejecutar una vez!)
+ * Crea las hojas necesarias y sus encabezados si no existen.
+ * ==============================================================================
+ */
+function configurarEntorno() {
+  const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  
+  // 1. Hoja de Contactos (BD)
+  let sheetBD = ss.getSheetByName(CONFIG.SHEET_CONTACTS);
+  if (!sheetBD) sheetBD = ss.insertSheet(CONFIG.SHEET_CONTACTS);
+  if (sheetBD.getRange(1, 1).getValue() === '') {
+    sheetBD.getRange(1, 1, 1, 4).setValues([['Fecha (ISO)', 'Nombre', 'Email', 'Mensaje']]);
+  }
+
+  // 2. Hoja de Blog
+  let sheetBlog = ss.getSheetByName(CONFIG.SHEET_BLOG);
+  if (!sheetBlog) sheetBlog = ss.insertSheet(CONFIG.SHEET_BLOG);
+  if (sheetBlog.getRange(1, 1).getValue() === '') {
+    sheetBlog.getRange(1, 1, 1, 5).setValues([['Fecha', 'Título', 'Contenido', 'URL Archivo', 'Tipo Archivo']]);
+  }
+
+  // 3. Hoja de Usuarios (Para autenticación de admin)
+  let sheetUsers = ss.getSheetByName(CONFIG.SHEET_USERS);
+  if (!sheetUsers) sheetUsers = ss.insertSheet(CONFIG.SHEET_USERS);
+  if (sheetUsers.getRange(1, 1).getValue() === '') {
+    sheetUsers.getRange(1, 1, 1, 2).setValues([['Usuario', 'Contraseña']]);
+    // Crear un usuario por defecto
+    sheetUsers.getRange(2, 1, 1, 2).setValues([['admin', 'admin123']]); 
+  }
+  
+  Logger.log("¡Entorno configurado correctamente! Hojas creadas.");
+}
+
+/**
+ * ENCUENTRA LA PRIMERA FILA REALMENTE VACÍA
+ */
+function getPrimeraFilaVacia(sheet) {
+  const columnaA = sheet.getRange("A:A").getValues();
+  for (let i = 0; i < columnaA.length; i++) {
+    if (!columnaA[i][0] || columnaA[i][0].toString().trim() === '') {
+      return i + 1;
+    }
+  }
+  return columnaA.length + 1;
+}
+
+/**
+ * ==============================================================================
+ * CONTROLADOR PRINCIPAL POST
+ * ==============================================================================
+ */
+function doPost(e) {
+  const lock = LockService.getScriptLock();
+  lock.tryLock(10000);
+
+  try {
+    let payload = {};
+    if (e && e.postData && e.postData.contents) {
+      try {
+        payload = JSON.parse(e.postData.contents);
+      } catch (err) {
+        payload = e.parameter || {};
+      }
+    } else if (e && e.parameter) {
+      payload = e.parameter;
+    }
+
+    const action = payload.action || 'contact';
+
+    if (action === 'contact') {
+      return handleContact(payload);
+    } else if (action === 'login') {
+      return handleLogin(payload);
+    } else if (action === 'create_post') {
+      return handleCreatePost(payload);
+    } else {
+      throw new Error("Acción no válida");
+    }
+
+  } catch (error) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: false, error: error.toString() }))
+      .setMimeType(ContentService.MimeType.JSON);
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/**
+ * ==============================================================================
+ * CONTROLADOR GET (Para leer posts del blog o probar estado)
+ * ==============================================================================
+ */
+function doGet(e) {
+  const action = e.parameter.action || 'status';
+  
+  if (action === 'get_posts') {
+    const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+    const sheetBlog = ss.getSheetByName(CONFIG.SHEET_BLOG);
+    const data = sheetBlog.getDataRange().getValues();
+    
+    // Remover encabezados
+    const headers = data.shift();
+    const posts = data.map(row => ({
+      fecha: row[0],
+      titulo: row[1],
+      contenido: row[2],
+      urlArchivo: row[3],
+      tipoArchivo: row[4]
+    })).reverse(); // Para mostrar los más recientes primero
+
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: true, data: posts }))
+      .setMimeType(ContentService.MimeType.JSON);
+  }
+
+  return ContentService
+    .createTextOutput(JSON.stringify({ status: 'online', message: 'API de SST Y APH EMIGAB activa' }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+/**
+ * ==============================================================================
+ * FUNCIONES ESPECÍFICAS DE ACCIÓN
+ * ==============================================================================
+ */
+
+// --- 1. Manejo de Contacto (Original mejorado) ---
+function handleContact(payload) {
+  const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  let sheet = ss.getSheetByName(CONFIG.SHEET_CONTACTS);
+  
+  const name = (payload.name || '').trim();
+  const email = (payload.email || '').trim();
+  const message = (payload.message || '').trim();
+  const date = payload.date || new Date().toISOString();
+
+  const nextRow = getPrimeraFilaVacia(sheet);
+  sheet.getRange(nextRow, 1, 1, 4).setValues([[date, name, email, message]]);
+  SpreadsheetApp.flush(); 
+
+  try {
+    sendNotificationEmail({ name, email, message, date });
+  } catch (mailError) {
+    Logger.log('Error enviando correo: ' + mailError.toString());
+  }
+
+  return ContentService
+    .createTextOutput(JSON.stringify({ success: true, message: 'Registro exitoso', row: nextRow }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// --- 2. Manejo de Autenticación de Administrador ---
+function handleLogin(payload) {
+  const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  const sheetUsers = ss.getSheetByName(CONFIG.SHEET_USERS);
+  const data = sheetUsers.getDataRange().getValues();
+  
+  const reqUser = payload.username;
+  const reqPass = payload.password;
+  
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] === reqUser && data[i][1] === reqPass) {
+      return ContentService
+        .createTextOutput(JSON.stringify({ success: true, token: 'admin_auth_token_emigab' }))
+        .setMimeType(ContentService.MimeType.JSON);
+    }
+  }
+  
+  return ContentService
+    .createTextOutput(JSON.stringify({ success: false, message: 'Credenciales inválidas' }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+// --- 3. Creación de Posts de Blog con URL multimedia opcional ---
+function handleCreatePost(payload) {
+  const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
+  const sheetBlog = ss.getSheetByName(CONFIG.SHEET_BLOG);
+  
+  const title = payload.title || 'Sin Título';
+  const content = payload.content || '';
+  const date = new Date().toISOString();
+  
+  const fileUrl = payload.mediaUrl || '';
+  const fileMime = payload.mediaType || 'none';
+
+  if (fileUrl && !/^https?:\/\/\S+$/i.test(fileUrl)) {
+    throw new Error('La URL multimedia debe iniciar con http:// o https://.');
+  }
+
+  const nextRow = getPrimeraFilaVacia(sheetBlog);
+  sheetBlog.getRange(nextRow, 1, 1, 5).setValues([[date, title, content, fileUrl, fileMime]]);
+  SpreadsheetApp.flush();
+
+  return ContentService
+    .createTextOutput(JSON.stringify({
+      success: true,
+      message: 'Post publicado correctamente',
+      url: fileUrl
+    }))
+    .setMimeType(ContentService.MimeType.JSON);
+}
+
+/**
+ * ==============================================================================
+ * PLANTILLA DE CORREO (Adaptada a EMIGAB)
+ * ==============================================================================
+ */
+function sendNotificationEmail(lead) {
+  if (!CONFIG.NOTIFICATION_EMAIL || CONFIG.NOTIFICATION_EMAIL.includes('TU_CORREO')) return;
+
+  const formattedDate = new Date().toLocaleString('es-CO', { 
+    timeZone: 'America/Bogota',
+    dateStyle: 'full', 
+    timeStyle: 'short' 
+  });
+  const subject = `🚨 Nueva Solicitud de Servicio / Contacto: ${lead.name || 'Prospecto'}`;
+  const htmlBody = `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="utf-8">
+    <style>
+      body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f3f4f6; margin: 0; padding: 20px; color: #1f2937; }
+      .container { max-width: 600px; margin: 0 auto; background: #ffffff; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid #e5e7eb; }
+      .header { background: linear-gradient(135deg, #06315A, #6DC045); padding: 30px 24px; text-align: center; color: #ffffff; }
+      .header h1 { margin: 0; font-size: 24px; font-weight: 800; }
+      .content { padding: 30px 24px; }
+      .info-box { background: #f9fafb; border: 1px solid #e5e7eb; border-radius: 12px; padding: 18px; margin-bottom: 20px; }
+      .label { font-size: 12px; font-weight: 700; text-transform: uppercase; color: #6b7280; margin-bottom: 4px; }
+      .value { font-size: 16px; font-weight: 600; color: #111827; margin-bottom: 14px; }
+      .message-box { background: #eff6ff; border-left: 4px solid #6DC045; padding: 16px; border-radius: 8px; font-size: 15px; color: #06315A; white-space: pre-wrap; }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🦺 Nuevo Mensaje Recibido</h1>
+        <p>Portal Web - SST Y APH EMIGAB</p>
+      </div>
+      <div class="content">
+        <div class="info-box">
+          <div class="label">👤 Nombre Completo</div>
+          <div class="value">${lead.name || 'No especificado'}</div>
+          
+          <div class="label">✉️ Correo Electrónico</div>
+          <div class="value"><a href="mailto:${lead.email}">${lead.email || 'No especificado'}</a></div>
+
+          <div class="label">🕒 Fecha de Registro</div>
+          <div class="value" style="margin-bottom:0;">${formattedDate}</div>
+        </div>
+
+        <div class="label">💬 Requerimiento / Mensaje:</div>
+        <div class="message-box">${lead.message || 'Sin mensaje adicional.'}</div>
+      </div>
+    </div>
+  </body>
+  </html>
+  `;
+  MailApp.sendEmail({
+    to: CONFIG.NOTIFICATION_EMAIL,
+    subject: subject,
+    name: CONFIG.SENDER_NAME,
+    replyTo: lead.email || CONFIG.NOTIFICATION_EMAIL,
+    htmlBody: htmlBody
+  });
+}
