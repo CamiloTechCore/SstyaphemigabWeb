@@ -17,7 +17,7 @@ function SocialLinks({ vertical = false }) {
           target="_blank"
           rel="noopener noreferrer"
           aria-label={label}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-navy/10 text-navy transition-all duration-300 ease-in-out hover:-translate-y-1 hover:bg-navy hover:text-white"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-navy/10 text-navy transition-all duration-300 ease-in-out hover:-translate-y-1 hover:bg-navy hover:!text-white focus-visible:-translate-y-1 focus-visible:bg-navy focus-visible:!text-white"
         >
           <Icon size={16} />
         </a>

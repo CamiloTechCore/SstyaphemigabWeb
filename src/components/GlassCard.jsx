@@ -9,7 +9,6 @@ function GlassCard({
   className = '',
   variant = 'light',
   as: Component = motion.div,
-  delay = 0,
   hover = true,
   ...props
 }) {
@@ -18,11 +17,7 @@ function GlassCard({
   return (
     <Component
       className={`${base} p-6 ${className}`}
-      initial={{ opacity: 0, y: 24 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.2 }}
       whileHover={hover ? { y: -6, transition: { duration: 0.25 } } : undefined}
-      transition={{ duration: 0.5, ease: 'easeInOut', delay }}
       {...props}
     >
       {children}

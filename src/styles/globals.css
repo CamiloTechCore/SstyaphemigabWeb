@@ -238,6 +238,40 @@ textarea:focus-visible {
   list-style: decimal;
 }
 
+.post-content a {
+  color: #0d4a82;
+  font-weight: 600;
+  text-decoration: underline;
+  text-decoration-color: #6dc045;
+  text-underline-offset: 0.2em;
+}
+
+.blog-note {
+  background: #ffffff;
+}
+
+.blog-note-header {
+  background: linear-gradient(135deg, rgba(6, 49, 90, 0.1), rgba(109, 192, 69, 0.14));
+  border-bottom: 1px solid rgba(6, 49, 90, 0.12);
+}
+
+.blog-note-content {
+  max-height: min(60vh, 36rem);
+  overflow-y: auto;
+}
+
+[data-theme='dark'] .blog-note,
+[data-theme='dark'] .blog-note .text-navy {
+  background: #ffffff;
+  color: #06315a;
+}
+
+[data-theme='dark'] .blog-note .text-navy\/70,
+[data-theme='dark'] .blog-note .text-navy\/60,
+[data-theme='dark'] .blog-note .text-navy\/50 {
+  color: rgba(6, 49, 90, 0.7);
+}
+
 .page-heading {
   margin-bottom: 2.5rem;
 }

@@ -1,6 +1,5 @@
 import { Link } from 'react-router-dom'
 import { FaShieldAlt, FaHeartbeat, FaChalkboardTeacher, FaCheckCircle } from 'react-icons/fa'
-import { motion } from 'framer-motion'
 import GlassCard from '../components/GlassCard'
 import HomeMediaCarousel from '../components/HomeMediaCarousel'
 
@@ -46,29 +45,14 @@ function Home() {
 
         <div className="home-hero-content relative z-10 flex flex-col items-start gap-8 px-6 py-10 sm:px-10 sm:py-14">
           <div className="flex min-w-0 max-w-xl flex-1 flex-col items-start gap-5">
-            <motion.h1
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, ease: 'easeInOut' }}
-            className="max-w-xl text-3xl font-extrabold leading-tight text-white sm:text-4xl md:text-5xl"
-          >
-            Seguridad y Salud en el Trabajo, Atención Prehospitalaria
-            </motion.h1>
-            <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.1, ease: 'easeInOut' }}
-            className="max-w-lg text-sm text-white/85 sm:text-base"
-          >
-            En SST Y APH EMIGAB protegemos la vida y el bienestar de tu equipo con soluciones
-            integrales en prevención, capacitación y respuesta a emergencias.
-            </motion.p>
-            <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.2, ease: 'easeInOut' }}
-            className="flex flex-wrap gap-3"
-          >
+            <h1 className="max-w-xl text-3xl font-extrabold leading-tight text-white sm:text-4xl md:text-5xl">
+              Seguridad y Salud en el Trabajo, Atención Prehospitalaria
+            </h1>
+            <p className="max-w-lg text-sm text-white/85 sm:text-base">
+              En SST Y APH EMIGAB protegemos la vida y el bienestar de tu equipo con soluciones
+              integrales en prevención, capacitación y respuesta a emergencias.
+            </p>
+            <div className="flex flex-wrap gap-3">
             <Link
               to="/servicios"
               className="rounded-xl bg-green px-5 py-2.5 text-sm font-bold text-navy shadow-lg shadow-green/20 transition-all duration-300 ease-in-out hover:-translate-y-0.5 hover:bg-white hover:shadow-xl focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
@@ -81,7 +65,7 @@ function Home() {
             >
               Contáctanos
             </Link>
-            </motion.div>
+            </div>
           </div>
         </div>
       </section>
@@ -104,8 +88,8 @@ function Home() {
       <section className="mb-14">
         <h2 className="mb-6 text-2xl font-bold text-navy">¿Qué hacemos?</h2>
         <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {HIGHLIGHTS.map(({ icon: Icon, title, text }, i) => (
-            <GlassCard key={title} delay={i * 0.1}>
+          {HIGHLIGHTS.map(({ icon: Icon, title, text }) => (
+            <GlassCard key={title}>
               <Icon className="mb-3 text-green" size={30} />
               <h3 className="mb-2 text-lg font-bold text-navy">{title}</h3>
               <p className="text-sm text-navy/70">{text}</p>

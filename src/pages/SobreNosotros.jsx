@@ -30,7 +30,7 @@ function SobreNosotros() {
             nuestros clientes.
           </p>
         </GlassCard>
-        <GlassCard delay={0.1}>
+        <GlassCard>
           <FaEye className="mb-3 text-green" size={28} />
           <h2 className="mb-2 text-lg font-bold text-navy">Visión</h2>
           <p className="text-sm text-navy/70">

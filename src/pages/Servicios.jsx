@@ -53,8 +53,8 @@ function Servicios() {
       </header>
 
       <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-5">
-        {SERVICIOS.map(({ icon: Icon, title, text }, i) => (
-          <GlassCard key={title} delay={(i % 3) * 0.1}>
+        {SERVICIOS.map(({ icon: Icon, title, text }) => (
+          <GlassCard key={title}>
             <Icon className="mb-3 text-green" size={30} />
             <h2 className="mb-2 text-lg font-bold text-navy">{title}</h2>
             <p className="text-sm text-navy/70">{text}</p>

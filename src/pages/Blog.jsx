@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import DOMPurify from 'dompurify'
-import { HiPlus, HiX } from 'react-icons/hi'
+import { HiBell, HiPlus, HiX } from 'react-icons/hi'
 import GlassCard from '../components/GlassCard'
 import Loader from '../components/Loader'
 import AdminAuthModal from '../components/AdminAuthModal'
@@ -17,6 +17,11 @@ function Blog() {
   const [showAuth, setShowAuth] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
   const [selectedPost, setSelectedPost] = useState(null)
+
+  const hasContentLink = (post) => {
+    const document = new DOMParser().parseFromString(post.contenido || '', 'text/html')
+    return Boolean(document.querySelector('a[href^="http://"], a[href^="https://"]'))
+  }
 
   const fetchPosts = async () => {
     setLoading(true)
@@ -74,11 +79,22 @@ function Blog() {
             <GlassCard
               key={`${post.fecha}-${i}`}
               as={motion.button}
-              delay={(i % 3) * 0.08}
               onClick={() => setSelectedPost(post)}
-              className="w-full text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-green"
+              className="relative w-full text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-green"
               aria-label={`Leer publicación: ${post.titulo}`}
             >
+              {hasContentLink(post) && (
+                <span
+                  className="group absolute right-4 top-4 z-10 flex h-9 w-9 items-center justify-center rounded-full bg-navy text-white shadow-md"
+                  title="Este párrafo contiene un enlace"
+                >
+                  <HiBell size={18} />
+                  <span className="absolute right-0 top-0 h-2.5 w-2.5 rounded-full border-2 border-white bg-red-500" />
+                  <span className="pointer-events-none absolute right-0 top-11 w-44 rounded-lg bg-navy px-2 py-1.5 text-center text-xs font-medium text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-visible:opacity-100">
+                    Este párrafo contiene un enlace
+                  </span>
+                </span>
+              )}
               <h2 className="mb-1 text-lg font-bold text-navy">{post.titulo}</h2>
               <p className="mb-2 text-xs text-navy/50">
                 {post.fecha ? new Date(post.fecha).toLocaleDateString('es-CO') : ''}
@@ -96,11 +112,8 @@ function Blog() {
       <motion.button
         onClick={handleFabClick}
         aria-label="Crear publicación"
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
         whileHover={{ scale: 1.08 }}
         whileTap={{ scale: 0.92 }}
-        transition={{ type: 'spring', stiffness: 200, damping: 14 }}
         className="fixed bottom-5 left-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-navy text-white shadow-lg transition-colors duration-300 ease-in-out hover:bg-green md:bottom-6 md:left-6"
       >
         <HiPlus size={26} />
@@ -136,15 +149,15 @@ function Blog() {
             aria-label={selectedPost.titulo}
           >
             <motion.article
-              className="modal-surface my-auto w-full max-w-3xl rounded-2xl p-5 shadow-2xl sm:p-8"
+              className="blog-note modal-surface my-auto w-full max-w-3xl overflow-hidden rounded-3xl shadow-2xl"
               initial={{ opacity: 0, scale: 0.96, y: 16 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.96, y: 16 }}
               onClick={(event) => event.stopPropagation()}
             >
-              <div className="mb-5 flex items-start justify-between gap-4">
-                <div>
-                  <p className="mb-2 text-xs text-navy/50">
+              <header className="blog-note-header flex items-start justify-between gap-4 p-5 sm:p-8">
+                <div className="min-w-0">
+                  <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-navy/60">
                     {selectedPost.fecha
                       ? new Date(selectedPost.fecha).toLocaleDateString('es-CO')
                       : ''}
@@ -159,11 +172,19 @@ function Blog() {
                 >
                   <HiX size={22} />
                 </button>
+              </header>
+              <div className="blog-note-content p-5 sm:p-8">
+                {hasContentLink(selectedPost) && (
+                  <p className="mb-5 flex items-center gap-2 rounded-xl bg-green/15 px-3 py-2 text-xs font-semibold text-green-dark">
+                    <HiBell size={17} />
+                    Esta publicación contiene uno o más enlaces.
+                  </p>
+                )}
+                <div
+                  className="post-content text-sm text-navy/70 sm:text-base"
+                  dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedPost.contenido || '') }}
+                />
               </div>
-              <div
-                className="post-content text-sm text-navy/70 sm:text-base"
-                dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedPost.contenido || '') }}
-              />
             </motion.article>
           </motion.div>
         )}
