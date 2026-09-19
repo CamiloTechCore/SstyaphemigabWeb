@@ -94,7 +94,7 @@ function ContactForm({ compact = false }) {
 
       {status === 'success' && (
         <p className="animate-fade-in rounded-lg bg-green/15 px-3 py-2 text-xs font-medium text-green-dark">
-          ¡Gracias! Tu mensaje fue enviado, te contactaremos pronto.
+          ¡Gracias! Tu mensaje fue enviado, te contactaremos pronto. te quiero
         </p>
       )}
       {status === 'error' && (
