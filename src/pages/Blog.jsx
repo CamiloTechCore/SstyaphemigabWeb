@@ -13,7 +13,7 @@ import { isAuthenticated } from '../services/auth'
 function Blog() {
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
-  const [loadError, setLoadError] = useState(false)
+  const [loadError, setLoadError] = useState('')
   const [showAuth, setShowAuth] = useState(false)
   const [showCreate, setShowCreate] = useState(false)
   const [selectedPost, setSelectedPost] = useState(null)
@@ -29,8 +29,8 @@ function Blog() {
     try {
       const res = await getPosts()
       setPosts(res?.data || [])
-    } catch {
-      setLoadError(true)
+    } catch (error) {
+      setLoadError(error.message || 'No se pudieron cargar las publicaciones.')
     } finally {
       setLoading(false)
     }
@@ -63,7 +63,7 @@ function Blog() {
 
       {!loading && loadError && (
         <GlassCard hover={false} className="text-center text-sm text-navy/60">
-          No se pudieron cargar las publicaciones. Verifica la conexión con la API.
+          {loadError}
         </GlassCard>
       )}
 

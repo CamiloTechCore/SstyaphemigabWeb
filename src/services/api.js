@@ -8,13 +8,14 @@ import axios from 'axios'
  * por eso los POST se envían como "text/plain" (evita el preflight OPTIONS)
  * y el propio `doPost` del backend se encarga de parsear el JSON recibido.
  */
-const API_URL = import.meta.env.VITE_API_URL || 'https://script.google.com/macros/s/TU_SCRIPT_ID/exec'
+const API_URL = import.meta.env.VITE_API_URL
 
 const client = axios.create({
   timeout: 15000,
 })
 
 async function postAction(action, payload = {}) {
+  assertApiConfigured()
   const { data } = await client.post(
     API_URL,
     JSON.stringify({ action, ...payload }),
@@ -24,10 +25,17 @@ async function postAction(action, payload = {}) {
 }
 
 async function getAction(action, params = {}) {
+  assertApiConfigured()
   const { data } = await client.get(API_URL, {
     params: { action, ...params },
   })
   return data
+}
+
+function assertApiConfigured() {
+  if (!API_URL || API_URL.includes('TU_SCRIPT_ID')) {
+    throw new Error('La URL de la API no está configurada para este entorno.')
+  }
 }
 
 /** Envía un mensaje del formulario de contacto (Hoja BD). */

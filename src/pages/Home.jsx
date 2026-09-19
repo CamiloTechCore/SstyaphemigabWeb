@@ -32,15 +32,6 @@ function Home() {
     <div className="mx-auto max-w-5xl">
       {/* HERO */}
       <section className="relative mb-14 overflow-hidden rounded-3xl">
-        <video
-          className="absolute inset-0 h-full w-full object-cover"
-          src="/assets_estaticos/hero-video.mp4"
-          poster="/assets_estaticos/hero-poster.jpg"
-          autoPlay
-          loop
-          muted
-          playsInline
-        />
         <div className="absolute inset-0 bg-gradient-to-br from-navy/90 via-navy/75 to-green/60" />
 
         <div className="home-hero-content relative z-10 flex flex-col items-start gap-8 px-6 py-10 sm:px-10 sm:py-14">
