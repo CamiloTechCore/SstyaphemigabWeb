@@ -195,7 +195,7 @@ function handleLogin(payload) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-// --- 3. Creación de Posts de Blog con URL multimedia opcional ---
+// --- 3. Creación de Posts de Blog de texto enriquecido ---
 function handleCreatePost(payload) {
   const ss = SpreadsheetApp.openById(CONFIG.SPREADSHEET_ID);
   const sheetBlog = ss.getSheetByName(CONFIG.SHEET_BLOG);
@@ -204,12 +204,8 @@ function handleCreatePost(payload) {
   const content = payload.content || '';
   const date = new Date().toISOString();
   
-  const fileUrl = payload.mediaUrl || '';
-  const fileMime = payload.mediaType || 'none';
-
-  if (fileUrl && !/^https?:\/\/\S+$/i.test(fileUrl)) {
-    throw new Error('La URL multimedia debe iniciar con http:// o https://.');
-  }
+  const fileUrl = '';
+  const fileMime = 'none';
 
   const nextRow = getPrimeraFilaVacia(sheetBlog);
   sheetBlog.getRange(nextRow, 1, 1, 5).setValues([[date, title, content, fileUrl, fileMime]]);

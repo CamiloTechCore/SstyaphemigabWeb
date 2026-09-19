@@ -10,34 +10,6 @@ import ProtectedRoute from '../components/ProtectedRoute'
 import { getPosts } from '../services/api'
 import { isAuthenticated } from '../services/auth'
 
-function PostMedia({ url, type }) {
-  if (!url) return null
-
-  if (type?.startsWith('video')) {
-    return (
-      <video
-        src={url}
-        className="mb-4 h-48 w-full rounded-xl object-cover"
-        autoPlay
-        loop
-        muted
-        playsInline
-        controls
-        preload="none"
-      />
-    )
-  }
-
-  return (
-    <img
-      src={url}
-      alt=""
-      loading="lazy"
-      className="mb-4 h-48 w-full rounded-xl object-cover"
-    />
-  )
-}
-
 function Blog() {
   const [posts, setPosts] = useState([])
   const [loading, setLoading] = useState(true)
@@ -107,7 +79,6 @@ function Blog() {
               className="w-full text-left focus-visible:outline-2 focus-visible:outline-offset-4 focus-visible:outline-green"
               aria-label={`Leer publicación: ${post.titulo}`}
             >
-              <PostMedia url={post.urlArchivo} type={post.tipoArchivo} />
               <h2 className="mb-1 text-lg font-bold text-navy">{post.titulo}</h2>
               <p className="mb-2 text-xs text-navy/50">
                 {post.fecha ? new Date(post.fecha).toLocaleDateString('es-CO') : ''}
@@ -189,7 +160,6 @@ function Blog() {
                   <HiX size={22} />
                 </button>
               </div>
-              <PostMedia url={selectedPost.urlArchivo} type={selectedPost.tipoArchivo} />
               <div
                 className="post-content text-sm text-navy/70 sm:text-base"
                 dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(selectedPost.contenido || '') }}

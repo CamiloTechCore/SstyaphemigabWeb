@@ -45,9 +45,9 @@ export function login(username, password) {
   return postAction('login', { username, password })
 }
 
-/** Crea un post de blog con una URL multimedia opcional. */
-export function createPost({ title, content, mediaUrl, mediaType }) {
-  return postAction('create_post', { title, content, mediaUrl, mediaType })
+/** Crea un post de blog de texto enriquecido. */
+export function createPost({ title, content }) {
+  return postAction('create_post', { title, content })
 }
 
 /** Obtiene el listado de posts del blog (Hoja Blog), más recientes primero. */

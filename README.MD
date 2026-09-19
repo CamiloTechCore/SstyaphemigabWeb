@@ -35,7 +35,7 @@ Para lograr un diseño moderno, fluido y profesional, se utilizará el efecto *G
 * **Frontend:** React (con Vite), React Router DOM (para enrutamiento).  
 * **Backend / API:** Node.js (opcional intermedio) \+ Google Apps Script (Serverless API en Google Cloud).  
 * **Base de Datos:** Google Sheets (Hojas: BD Contacto, Blog, Usuarios).  
-* **Multimedia del Blog:** URL pública opcional de imagen, GIF o video.  
+* **Contenido del Blog:** Publicaciones de texto enriquecido.  
 * **Estilos:** CSS Modules / Tailwind CSS (Optimizado para animaciones fluidas y Glassmorphism).
 
 ## **📋 Requisitos Funcionales**
@@ -49,8 +49,8 @@ Para lograr un diseño moderno, fluido y profesional, se utilizará el efecto *G
    * Botón flotante **(+)** o "Crear" visible en la ruta /Blog.  
    * Al hacer clic, debe solicitar **Usuario y Contraseña**.  
    * Autenticación validada contra la base de datos (Hoja: Usuarios).  
-   * Formulario de creación: Permite registrar título, contenido y una URL pública opcional de imagen, video o GIF.
-   * La URL se guarda directamente en Google Sheets junto con la publicación.
+   * Formulario de creación: Permite registrar título y contenido enriquecido.
+   * Las publicaciones se guardan directamente en Google Sheets.
 
 ## **📐 Requisitos No Funcionales**
 

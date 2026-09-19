@@ -47,13 +47,13 @@ function Navbar() {
     <>
       {/* --- Desktop sidebar --- */}
       <aside className="glass-panel sticky top-0 hidden h-screen w-56 shrink-0 flex-col gap-8 border-r border-navy/10 px-4 py-6 lg:flex">
-        <Logo />
+        <div className="flex items-start justify-between gap-2">
+          <Logo />
+          <ThemeToggle />
+        </div>
         <nav className="flex flex-col gap-1.5" aria-label="Navegación principal">
           {renderLinks()}
         </nav>
-        <div className="mt-auto">
-          <ThemeToggle />
-        </div>
       </aside>
 
       {/* --- Mobile top bar --- */}

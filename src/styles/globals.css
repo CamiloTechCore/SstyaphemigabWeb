@@ -272,6 +272,12 @@ textarea:focus-visible {
   color: #ffffff;
 }
 
+[data-theme='dark'] button[aria-label^='Activar tema'] {
+  background-color: rgba(30, 56, 78, 0.98);
+  border-color: rgba(109, 192, 69, 0.6);
+  color: #e7f0f7;
+}
+
 .media-marquee {
   overflow: hidden;
   -webkit-mask-image: linear-gradient(

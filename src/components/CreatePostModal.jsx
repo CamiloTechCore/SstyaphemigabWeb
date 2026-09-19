@@ -21,19 +21,6 @@ function hasEditorContent(value) {
   return value.replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim().length > 0
 }
 
-function isValidMediaUrl(value) {
-  try {
-    const url = new URL(value)
-    return url.protocol === 'https:' || url.protocol === 'http:'
-  } catch {
-    return false
-  }
-}
-
-function getMediaType(url) {
-  return /\.(mp4|webm|ogg)(?:$|[?#])/i.test(url) ? 'video/*' : 'image/*'
-}
-
 function formatContentForStorage(value) {
   return value
     .replace(/<\/p>\s*<p[^>]*>/gi, '<br>')
@@ -43,23 +30,19 @@ function formatContentForStorage(value) {
 
 /**
  * Modal de creación de post del Blog (solo accesible con sesión de admin).
- * Guarda título, contenido y una URL multimedia opcional en la hoja Blog.
+ * Guarda título y contenido enriquecido en la hoja Blog.
  */
 function CreatePostModal({ open, onClose, onCreated }) {
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-  const [mediaUrl, setMediaUrl] = useState('')
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState('')
-  const [warning, setWarning] = useState('')
 
   const resetForm = () => {
     setTitle('')
     setContent('')
-    setMediaUrl('')
     setStatus('idle')
     setError('')
-    setWarning('')
   }
 
   const handleClose = () => {
@@ -73,25 +56,17 @@ function CreatePostModal({ open, onClose, onCreated }) {
       setError('El título y el contenido son obligatorios.')
       return
     }
-    if (mediaUrl.trim() && !isValidMediaUrl(mediaUrl.trim())) {
-      setError('Ingresa una URL válida que inicie con http:// o https://.')
-      return
-    }
-
     setStatus('loading')
     setError('')
     try {
       const res = await createPost({
         title,
         content: formatContentForStorage(content),
-        mediaUrl: mediaUrl.trim(),
-        mediaType: mediaUrl.trim() ? getMediaType(mediaUrl.trim()) : 'none',
       })
       if (res && res.success) {
         setStatus('success')
-        setWarning(res.warning || '')
         onCreated?.()
-        setTimeout(handleClose, res.warning ? 3500 : 900)
+        setTimeout(handleClose, 900)
       } else {
         throw new Error(res?.error || 'No se pudo publicar el post.')
       }
@@ -158,21 +133,6 @@ function CreatePostModal({ open, onClose, onCreated }) {
                   Usa títulos, tamaños, fuentes, listas, enlaces, colores y emojis desde tu teclado.
                 </p>
               </div>
-              <div>
-                <label className="mb-1 block text-xs font-semibold text-navy/70">
-                  URL de imagen o video (opcional)
-                </label>
-                <input
-                  type="url"
-                  value={mediaUrl}
-                  onChange={(event) => setMediaUrl(event.target.value)}
-                  placeholder="https://ejemplo.com/imagen.jpg"
-                  className="w-full rounded-xl border border-navy/15 bg-white/70 px-3 py-2 text-sm text-navy outline-none focus:border-green focus:ring-2 focus:ring-green/30"
-                />
-                <p className="mt-2 text-xs text-navy/60">
-                  Usa una URL pública. Las extensiones .mp4, .webm y .ogg se mostrarán como video.
-                </p>
-              </div>
 
               {status === 'error' && (
                 <p className="rounded-lg bg-red-100 px-3 py-2 text-xs font-medium text-red-600">
@@ -182,11 +142,6 @@ function CreatePostModal({ open, onClose, onCreated }) {
               {status === 'success' && (
                 <p className="rounded-lg bg-green/15 px-3 py-2 text-xs font-medium text-green-dark">
                   ¡Publicación creada con éxito!
-                </p>
-              )}
-              {warning && (
-                <p className="rounded-lg bg-amber-100 px-3 py-2 text-xs font-medium text-amber-800">
-                  {warning}
                 </p>
               )}
 
