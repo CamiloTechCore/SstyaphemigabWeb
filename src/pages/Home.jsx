@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom'
 import { FaShieldAlt, FaHeartbeat, FaChalkboardTeacher, FaCheckCircle } from 'react-icons/fa'
 import GlassCard from '../components/GlassCard'
 import HomeMediaCarousel from '../components/HomeMediaCarousel'
-import HeroPhone from '../components/HeroPhone'
+import HeroVideoGallery from '../components/HeroVideoGallery'
 
 const HIGHLIGHTS = [
   {
@@ -59,7 +59,7 @@ function Home() {
             </Link>
             </div>
           </div>
-          <HeroPhone />
+          <HeroVideoGallery />
         </div>
       </section>
 
