@@ -8,7 +8,7 @@ import axios from 'axios'
  * por eso los POST se envían como "text/plain" (evita el preflight OPTIONS)
  * y el propio `doPost` del backend se encarga de parsear el JSON recibido.
  */
-const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbybTLGdzr5BHfK-tDG6-M8wf5g7zywWctZABoLwH0EAQTS_xsku9ciOopaiJiWe5aP4/exec'
+const DEFAULT_API_URL = 'https://script.google.com/macros/s/AKfycbzp477w8bUrkXNRjE9R8yKDVWX5vMuKhv8yGPgw-qI2V5Ls3v86J7qxPKlxLI0DcYYq/exec'
 const configuredApiUrl = import.meta.env.VITE_API_URL?.trim()
 const API_URL = configuredApiUrl && !configuredApiUrl.includes('TU_SCRIPT_ID') ? configuredApiUrl : DEFAULT_API_URL
 
