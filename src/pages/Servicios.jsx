@@ -21,8 +21,8 @@ const SERVICIOS = [
   },
   {
     icon: FaChalkboardTeacher,
-    title: 'Capacitaciones y Formación',
-    text: 'Cursos de primeros auxilios, RCP, manejo de emergencias y brigadas de emergencia empresarial.',
+    title: 'Pistas de Entrenamiento ',
+    text: 'Formación en brigadas integrales de emergencias y simulacros prácticos.',
   },
   {
     icon: FaUserShield,
@@ -31,8 +31,8 @@ const SERVICIOS = [
   },
   {
     icon: FaFireExtinguisher,
-    title: 'Brigadas de Emergencia',
-    text: 'Conformación, entrenamiento y simulacros para brigadas de emergencia y evacuación.',
+    title: 'Venta de Insumos',
+    text: 'Recarga de Extintores, venta de botiquines , señalización de emergencia y equipos de seguridad.',
   },
   {
     icon: FaFileMedicalAlt,

@@ -23,13 +23,13 @@ function Contacto() {
             <h2 className="mb-4 text-lg font-bold text-navy">Información de contacto</h2>
             <ul className="space-y-3 text-sm text-navy/70">
               <li className="flex items-center gap-3">
-                <FaMapMarkerAlt className="text-green" /> Colombia | Bogotá
+                <FaMapMarkerAlt className="text-green" /> Cobertura Nacional
               </li>
               <li className="flex items-center gap-3">
                 <FaPhoneAlt className="text-green" /> +57 321 3351917
               </li>
               <li className="flex items-center gap-3">
-                <FaClock className="text-green" /> Lun - Vie: 8:00 AM - 6:00 PM
+                <FaClock className="text-green" /> Lun - Sab : 7:00 AM - 6:00 PM
               </li>
             </ul>
           </GlassCard>

@@ -24,7 +24,7 @@ const HIGHLIGHTS = [
 
 const STATS = [
   { value: '+500', label: 'Personas capacitadas' },
-  { value: '+80', label: 'Empresas atendidas' },
+  { value: '+25', label: 'Empresas atendidas' },
   { value: '24/7', label: 'Disponibilidad de APH' },
 ]
 
@@ -38,8 +38,14 @@ function Home() {
         <div className="home-hero-content relative z-10 flex flex-col items-start gap-8 px-6 py-10 sm:px-10 sm:py-14">
           <div className="flex min-w-0 max-w-xl flex-1 flex-col items-start gap-5">
             <h1 className="max-w-xl text-3xl font-extrabold leading-tight text-white sm:text-4xl md:text-5xl">
-              Seguridad y Salud en el Trabajo, Atención Prehospitalaria
+              SST Y APH EMIGAB
             </h1>
+            <h2 className="max-w-xl text-2xl font-extrabold leading-tight text-white sm:text-2xl md:text-2xl">
+              • Atención Prehospitalaria
+            </h2>
+            <h2 className="max-w-xl text-2xl font-extrabold leading-tight text-white sm:text-2xl md:text-2xl">
+              • Sistema de Gestión de Seguridad y Salud en el Trabajo
+            </h2>
             <p className="max-w-lg text-sm text-white/85 sm:text-base">
               En SST Y APH EMIGAB protegemos la vida y el bienestar de tu equipo con soluciones
               integrales en prevención, capacitación y respuesta a emergencias.
