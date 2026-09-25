@@ -10,13 +10,13 @@
  */
 
 const CONFIG = {
-  SPREADSHEET_ID: '1PfM0T04S6_5YIMR16UCujCMdcxJqDgSJRsdK_zlUEQ8', // 👈 ID de la hoja de cálculo en Google Sheets
-  FOLDER_ID: '1bLdiJADptUge-q3ItoANA-HUaN2Xk6tz',     // 👈 ID de la carpeta en Google Drive para imágenes/videos del blog
+  SPREADSHEET_ID: '', // 👈 ID de la hoja de cálculo en Google Sheets
+  FOLDER_ID: '',     // 👈 ID de la carpeta en Google Drive para imágenes/videos del blog
   SHEET_CONTACTS: 'BD',
   SHEET_BLOG: 'Blog',
   SHEET_REACTIONS: 'Reacciones',
   SHEET_USERS: 'Usuarios',
-  NOTIFICATION_EMAIL: 'brayancamilomolinadev@gmail.com', // 👈 Tu correo personal para notificaciones
+  NOTIFICATION_EMAIL: '', // 👈 Tu correo personal para notificaciones
   SENDER_NAME: 'SST Y APH EMIGAB'
 };
 
